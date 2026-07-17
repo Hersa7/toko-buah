@@ -1,13 +1,17 @@
 import { DatabaseSync } from 'node:sqlite'
 import path from 'node:path'
+import fs from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const DB_PATH = path.join(__dirname, '..', 'toko-buah.sqlite')
 
-// Pakai modul sqlite BAWAAN Node.js (tersedia sejak Node 22+), bukan library pihak ketiga --
-// jadi tidak perlu kompilasi native addon sama sekali. Ini yang bikin masalah "better-sqlite3
-// gagal di-install di Windows" hilang total, karena memang tidak ada lagi yang perlu dikompilasi.
+const DATA_DIR = path.join(__dirname, '..', 'data')
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true })
+}
+const DB_PATH = path.join(DATA_DIR, 'toko-buah.sqlite')
+
+
 export const db = new DatabaseSync(DB_PATH)
 
 db.exec('PRAGMA journal_mode = WAL')
@@ -66,10 +70,7 @@ db.exec(`
   );
 `)
 
-// node:sqlite tidak punya helper db.transaction(fn) seperti better-sqlite3, jadi dibikin sendiri
-// di sini: BEGIN sebelum fn() jalan, COMMIT kalau sukses, ROLLBACK otomatis kalau fn() melempar
-// error. Dipakai di routes/orders.js supaya insert order + order_items + update stok
-// tetap konsisten (semua berhasil, atau semua dibatalkan -- tidak ada yang "nyangkut" separuh).
+
 export function runInTransaction(fn) {
   db.exec('BEGIN')
   try {
