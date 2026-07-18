@@ -1,98 +1,156 @@
-# Toko Buah — Monorepo
+# 🍎 Toko Buah
 
-Monorepo untuk aplikasi Toko Buah. Dikelola dengan npm workspaces.
+Aplikasi web katalog dan pemesanan buah segar secara online. Dibangun sebagai proyek Ujian Akhir Semester mata kuliah **Pemrograman Web 2**.
+
+Pembeli dapat menjelajahi katalog, mengelola keranjang, dan checkout secara mandiri. Admin toko mendapat dasbor terpisah untuk mengelola stok produk dan status pesanan.
+
+---
+
+## ✨ Fitur Utama
+
+**Customer**
+- Registrasi & login (JWT)
+- Lihat, cari, dan filter katalog produk per kategori (termasuk kotak pencarian yang tetap bisa diakses di tampilan mobile)
+- Kelola keranjang belanja
+- Checkout dengan alamat pengiriman & metode pembayaran
+- Riwayat pesanan pribadi beserta status
+- Halaman Profil (lihat data akun & logout)
+
+**Admin**
+- Dashboard ringkasan toko
+- CRUD produk (tambah/ubah/hapus, atur stok & harga)
+- Kelola seluruh pesanan pelanggan & ubah status pesanan
+
+**Keamanan**
+- Password di-hash dengan bcrypt
+- Proteksi role admin di sisi backend (bukan hanya tampilan)
+- Harga & stok divalidasi ulang dari server saat checkout
+- Query database ter-parameterisasi (anti SQL Injection)
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Teknologi |
+|---|---|
+| Frontend | React 18 (Vite), Tailwind CSS, React Router, Context API |
+| Backend | Node.js, Express.js |
+| Database | SQLite via modul bawaan `node:sqlite` (Node.js ≥ 22) |
+| Autentikasi | JSON Web Token (JWT) |
+| Arsitektur | Monorepo (npm workspaces) |
+
+---
+
+## 📁 Struktur Proyek
 
 ```
 toko-buah/
-  apps/
-    web/              → React + Vite (frontend)
-      src/
-        api/          → client fetch ke backend (api/client.js)
-        components/   → komponen UI reusable
-        context/      → AuthContext, CartContext, ProductContext, OrderContext
-        pages/        → satu file per halaman
-    api/              → Express + SQLite (backend)
-      src/
-        db.js         → koneksi database & skema tabel
-        seed.js        → data awal (akun admin/customer contoh, 4 produk)
-        middleware/    → auth.js (cek token JWT & role admin)
-        routes/        → auth.js, products.js, orders.js
+├─ apps/
+│  ├─ web/                     → Frontend (React + Vite)
+│  │  └─ src/
+│  │     ├─ api/               → Client fetch ke backend
+│  │     ├─ components/        → Komponen UI reusable
+│  │     ├─ context/           → AuthContext, CartContext, ProductContext, OrderContext
+│  │     └─ pages/              → Satu file per halaman
+│  └─ api/                     → Backend (Express + SQLite)
+│     └─ src/
+│        ├─ db.js              → Koneksi database & skema tabel
+│        ├─ seed.js            → Data awal (akun admin/customer, contoh produk)
+│        ├─ middleware/        → Verifikasi JWT & proteksi role admin
+│        └─ routes/            → auth.js, products.js, orders.js
+└─ docs/
+   └─ PRD_Toko_Buah.pdf        → Product Requirement Document
 ```
 
-## Menjalankan (2 terminal)
+---
 
-Backend dan frontend jalan terpisah, jadi butuh 2 terminal.
+## 🚀 Menjalankan Secara Lokal
+
+**Prasyarat:** Node.js versi 22 ke atas (cek dengan `node -v`), karena backend menggunakan modul bawaan `node:sqlite`.
 
 ```bash
-npm install              # sekali saja, install semua workspace (web + api)
+# 1. Clone repository
+git clone https://github.com/Hersa7/toko-buah.git
+cd toko-buah
 
-# Terminal 1 — backend (jalan di http://localhost:4000)
+# 2. Install semua dependency (frontend + backend sekaligus)
+npm install
+
+# 3. Siapkan environment variable backend
+cp apps/api/.env.example apps/api/.env
+# lalu buka apps/api/.env dan isi JWT_SECRET dengan nilai bebas kamu sendiri
+```
+
+Jalankan backend dan frontend di **dua terminal terpisah**:
+
+```bash
+# Terminal 1 — backend (http://localhost:4000)
 npm run dev:api
 
-# Terminal 2 — frontend (jalan di http://localhost:5173)
+# Terminal 2 — frontend (http://localhost:5173)
 npm run dev:web
 ```
 
-Saat pertama kali `npm run dev:api` dijalankan, database SQLite (`apps/api/toko-buah.sqlite`)
-otomatis dibuat dan diisi data awal:
+Saat backend dijalankan pertama kali, database SQLite (`apps/api/toko-buah.sqlite`) otomatis dibuat dan diisi data awal.
 
-| Role     | Email                | Password    |
-|----------|-----------------------|-------------|
-| Admin    | admin@tokobuah.id     | admin123    |
-| Customer | budi@example.com      | customer123 |
+---
 
-Ganti `apps/api/.env` kalau mau ubah `JWT_SECRET` atau port backend.
+## 🔑 Akun Demo (untuk keperluan penilaian/demo)
 
-## Autentikasi & proteksi halaman
+> ⚠️ Akun di bawah ini hanya untuk keperluan demo/penilaian lokal. **Ganti password ini** (lihat `apps/api/src/seed.js`) sebelum dipakai di lingkungan publik/production sungguhan.
 
-- Register lewat `/register` **selalu** jadi role `customer` — tidak bisa daftar sebagai admin
-  lewat form publik (role admin cuma ada lewat seed data di atas).
-- `/checkout` dan `/riwayat-pesanan` butuh login (siapa saja).
-- `/admin/*` butuh login **dan** role admin — kalau belum login ditendang ke `/login`, kalau
-  login tapi bukan admin ditendang ke `/katalog`. Ini dicek dua kali: di frontend (route guard,
-  `components/RouteGuards.jsx`) dan di backend (`middleware/auth.js`, `requireAdmin`) — jadi
-  walau seseorang berhasil mengakali tampilan frontend, API-nya tetap menolak permintaan yang
-  tidak berhak.
-- Token JWT disimpan di `localStorage` browser, berlaku 7 hari.
+| Role | Email | Password |
+|---|---|---|
+| Admin | `admin@tokobuah.id` | `admin123` |
+| Customer | `budi@example.com` | `customer123` |
 
-## Database
+---
 
-Pakai `node:sqlite` — modul SQLite **bawaan Node.js sendiri** (tersedia sejak Node 22+), jadi
-**tidak perlu install/compile library database terpisah** (tidak ada masalah native addon gagal
-compile di Windows seperti `better-sqlite3`). Wajar kalau muncul `ExperimentalWarning: SQLite is
-an experimental feature` di terminal — itu cuma peringatan, bukan error, aman diabaikan.
+## 🗄️ Skema Database
 
-Filenya di `apps/api/toko-buah.sqlite` (otomatis dibuat, di-gitignore). Tabelnya:
-`users`, `products`, `orders`, `order_items`. Skema lengkap ada di `apps/api/src/db.js`, dan
-data awalnya ada di `apps/api/src/seed.js` — dua file ini juga referensi bagus untuk bagian
-"Database Schema / ERD" di dokumen PRD.
+Empat tabel utama: `users`, `products`, `orders`, `order_items`.
 
-## Kalau project lokal kamu sudah "berantakan"
+- `users (1) — (N) orders` — satu pengguna dapat memiliki banyak pesanan
+- `orders (1) — (N) order_items` — satu pesanan terdiri dari banyak item
+- `products (1) — (N) order_items` — satu produk dapat muncul di banyak item pesanan
 
-Zip ini adalah **versi bersih dan lengkap** dari semua yang sudah kita kerjakan bareng sampai
-sejauh ini. Kalau folder project di komputer kamu sudah campur aduk, cara paling aman:
+Detail kolom lengkap ada di `apps/api/src/db.js` dan pada dokumen PRD (bagian *Database Schema*).
 
-1. Tutup dulu dev server yang sedang jalan (`Ctrl+C` di semua terminal)
-2. Hapus/rename folder `toko-buah` yang lama
-3. Extract zip ini jadi folder `toko-buah` yang baru
-4. `npm install` di root, lalu jalankan `npm run dev:api` dan `npm run dev:web` di 2 terminal
+---
 
-## Troubleshooting instalasi
+## 🌐 Deployment
 
-**Error `EPERM: operation not permitted, rmdir ...` atau `npm warn cleanup Failed to remove`**
-(sering muncul di Windows, biasanya bekas percobaan install yang gagal sebelumnya):
+- **Live demo:** https://toko-buah-web.vercel.app/
+
+---
+
+## 🩹 Troubleshooting
+
+<details>
+<summary>Error <code>EPERM: operation not permitted, rmdir ...</code> atau <code>npm warn cleanup Failed to remove</code> (umum di Windows)</summary>
+
+Biasanya disebabkan sisa percobaan install yang gagal sebelumnya.
+
 1. Tutup semua terminal yang masih menjalankan `npm run dev:api` / `dev:web`
-2. Hapus folder `node_modules` di root project secara manual lewat File Explorer (klik kanan →
-   Delete), bukan lewat terminal yang sama
+2. Hapus folder `node_modules` di root project secara manual lewat File Explorer (klik kanan → Delete), bukan lewat terminal yang sama
 3. Hapus juga `package-lock.json` di root kalau ada
-4. Jalankan `npm install` lagi dari terminal yang baru
+4. Jalankan `npm install` lagi dari terminal baru
+</details>
 
-**Kalau backend error saat start dan menyebut `node:sqlite` tidak ditemukan:**
-Cek versi Node kamu dengan `node -v` — minimal harus Node 22. Kalau di bawah itu, update Node.js
-ke versi terbaru dari [nodejs.org](https://nodejs.org).
+<details>
+<summary>Backend error saat start dan menyebut <code>node:sqlite</code> tidak ditemukan</summary>
 
-## Catatan penting sebelum deploy/kumpul tugas
+Cek versi Node kamu dengan `node -v` — minimal harus Node 22. Kalau di bawah itu, update Node.js ke versi terbaru dari [nodejs.org](https://nodejs.org).
+</details>
 
-- `apps/api/.env` isinya `JWT_SECRET` contoh — **wajib diganti** kalau di-deploy sungguhan.
-- Password akun seed (`admin123`, `customer123`) juga sebaiknya diganti kalau demo di depan
-  banyak orang / di-deploy publik.
+<details>
+<summary>Muncul <code>ExperimentalWarning: SQLite is an experimental feature</code></summary>
+
+Ini hanya peringatan dari Node.js, bukan error — aman diabaikan.
+</details>
+
+---
+
+## 👤 Author
+
+Dikembangkan oleh **Muhammad Hersa Sugiannor** — NIM **2410010253** — sebagai proyek UAS Pemrograman Web 2.
