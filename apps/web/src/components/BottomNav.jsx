@@ -5,8 +5,7 @@ const ITEMS = [
   { icon: 'home', label: 'Beranda', to: '/katalog' },
   { icon: 'search', label: 'Cari', to: '/katalog' },
   { icon: 'shopping_bag', label: 'Pesanan', to: '/riwayat-pesanan' },
-  // TODO: arahkan ke halaman Profil begitu halamannya sudah dibuat
-  { icon: 'person', label: 'Profil', to: '#' },
+  { icon: 'person', label: 'Profil', to: '/profil' },
 ]
 
 export default function BottomNav() {
