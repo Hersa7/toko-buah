@@ -4,6 +4,7 @@ import BottomNav from '../components/BottomNav.jsx'
 import Footer from '../components/Footer.jsx'
 import CategoryChip from '../components/CategoryChip.jsx'
 import ProductCard from '../components/ProductCard.jsx'
+import MaterialIcon from '../components/MaterialIcon.jsx'
 import { useCart } from '../context/CartContext.jsx'
 import { useProducts } from '../context/ProductContext.jsx'
 import { CATEGORIES, formatRupiah } from '../data/products.js'
@@ -31,6 +32,24 @@ export default function CatalogPage() {
           <h1 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-background mb-md">
             Katalog Buah Segar
           </h1>
+
+          {/* Kotak pencarian khusus tampilan mobile -- sengaja dibuat terpisah dari kotak
+              pencarian di Navbar (yang cuma muncul di layar md ke atas), supaya pencarian
+              tetap bisa dipakai di HP dalam mode portrait maupun landscape. */}
+          <div className="relative md:hidden mb-md">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Cari buah..."
+              className="w-full bg-[#faf2ec] border border-outline-variant rounded-lg py-2 pl-4 pr-10 focus:outline-none focus:ring-1 focus:ring-primary font-body-sm text-body-sm"
+            />
+            <MaterialIcon
+              name="search"
+              className="absolute right-3 top-2 text-on-surface-variant"
+            />
+          </div>
+
           <div className="flex flex-wrap gap-xs overflow-x-auto pb-2">
             {CATEGORIES.map((category) => (
               <CategoryChip
