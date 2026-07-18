@@ -7,6 +7,7 @@ import CatalogPage from './pages/CatalogPage.jsx'
 import CartPage from './pages/CartPage.jsx'
 import CheckoutPage from './pages/CheckoutPage.jsx'
 import OrderHistoryPage from './pages/OrderHistoryPage.jsx'
+import ProfilePage from './pages/ProfilePage.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
 import ManageProductsPage from './pages/ManageProductsPage.jsx'
 import ManageOrdersPage from './pages/ManageOrdersPage.jsx'
@@ -35,6 +36,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                 <Route element={<RequireAuth />}>
                   <Route path="/checkout" element={<CheckoutPage />} />
                   <Route path="/riwayat-pesanan" element={<OrderHistoryPage />} />
+                  <Route path="/profil" element={<ProfilePage />} />
                 </Route>
 
                 {/* Khusus admin -- non-admin yang mencoba akses akan ditendang ke /katalog,
