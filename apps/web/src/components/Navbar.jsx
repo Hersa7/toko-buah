@@ -50,7 +50,7 @@ export default function Navbar({ searchValue, onSearchChange }) {
 
         <div className="flex items-center space-x-sm">
           {onSearchChange && (
-            <div className="relative hidden sm:block">
+            <div className="relative hidden md:block">
               <input
                 type="text"
                 value={searchValue}
